@@ -3,11 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Enums\TokenAbility;
+use App\Events\newUserNotify;
+use App\Events\UserEvent;
+use App\Jobs\SendTwoFactorToken;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -57,6 +61,7 @@ class UserController extends Controller
                 $user->profile_picture=$profile_picture;
                 $user->certificate=$certificate;
                 $user->save();
+                Event::dispatch(new UserEvent($user));
                 $accessToken = $user->createToken('access_token', [TokenAbility::ACCESS_API->value], Carbon::now()->addMinutes(config('sanctum.ac_expiration')));
                 $refreshToken = $user->createToken('refresh_token', [TokenAbility::ISSUE_ACCESS_TOKEN->value], Carbon::now()->addMinutes(config('sanctum.rt_expiration')));
 
@@ -105,6 +110,36 @@ class UserController extends Controller
                 $user = User::where('email', $request->email)->first();
                 $token=$user->createToken($request->device_name)->plainTextToken;
                 $user->token=$token;
+//
+//                // Check If 2FA is enabled
+//                if($user->get2FaStatus()){
+//
+//                    // generate 2fa code
+//                    $user->generateTwoFactorCode();
+//
+//                    // Send token to User Via email
+//                    $user->notify(new TwoFactorCode());
+//                    return $this->success(
+//                        [
+//                            '2fa_token' => JWT::encode( ['user_id'=>$user->id]),
+//                            '2fa_status'=>$user->get2FaStatus()
+//                        ]
+//                        ,'Two Factor Verification is required!',
+//                        Response::HTTP_OK
+//                    );
+//
+//                } else{
+//                    auth()->login($user);
+//                    return $this->success(
+//                        [
+//                            'token' => auth()->user()->createToken('API Token')->plainTextToken,
+//                            '2fa_status'=>auth()->user()->get2FaStatus()
+//                        ]
+//                        ,'Login success',
+//                        Response::HTTP_OK
+//                    );
+//                }
+
                 return response()->json([
                     'status' => true,
                     'message' => 'User Logged In Successfully',
