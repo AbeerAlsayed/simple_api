@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('c_password');
             $table->string('profile_picture')->nullable();
             $table->string('phone');
-            $table->string('cv');
+            $table->string('certificate');
             $table->rememberToken();
             $table->timestamps();
         });

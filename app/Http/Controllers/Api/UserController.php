@@ -27,7 +27,7 @@ class UserController extends Controller
                     'c_password' => 'required|same:password',
                     'phone'=>'required',
                     'profile_picture' => 'nullable|image',
-                    'cv' => 'file|mimes:pdf,doc,docx'
+                    'certificate' => 'file|mimes:pdf,doc,docx'
                 ]);
 
             if ($validateUser->fails()) {
@@ -43,10 +43,10 @@ class UserController extends Controller
                 $profile_picture="public/images/$file_name";
             }
 
-            if ($request->hasFile('cv')) {
-                $file_name = time() . '.' . $request->cv->extension();
-                $request->cv->move(public_path('images'), $file_name);
-                $cv = "public/images/$file_name";
+            if ($request->hasFile('certificate')) {
+                $file_name = time() . '.' . $request->certificate->extension();
+                $request->certificate->move(public_path('images'), $file_name);
+                $certificate = "public/images/$file_name";
             }
                 $user = new User();
                 $user->name = $request->name;
@@ -55,7 +55,7 @@ class UserController extends Controller
                 $user->password = Hash::make($request->password);
                 $user->c_password = Hash::make($request->c_password);
                 $user->profile_picture=$profile_picture;
-                $user->cv=$cv;
+                $user->certificate=$certificate;
                 $user->save();
                 $accessToken = $user->createToken('access_token', [TokenAbility::ACCESS_API->value], Carbon::now()->addMinutes(config('sanctum.ac_expiration')));
                 $refreshToken = $user->createToken('refresh_token', [TokenAbility::ISSUE_ACCESS_TOKEN->value], Carbon::now()->addMinutes(config('sanctum.rt_expiration')));
@@ -145,7 +145,7 @@ class UserController extends Controller
                     'email' => 'required|email|unique:users,id,'.$request->user()->id,
                     'phone'=>'required',
                     'profile_picture' => 'nullable|image',
-                    'cv' => 'file|mimes:pdf,doc,docx'
+                    'certificate' => 'file|mimes:pdf,doc,docx'
                 ]);
             if ($validateUser->fails()) {
                 return response()->json([
@@ -164,11 +164,11 @@ class UserController extends Controller
                     $profile_picture="/storage/".$path;
                     $user->profile_picture=$profile_picture;
                 }
-                if ($request->cv && $request->cv->isValid()){
-                    $file_name=time().'.'.$request->file('cv')->getClientOriginalName();
-                    $path= $request->file('cv')->storeAs('/',$file_name,'public');
-                    $cv="/storage/".$path;
-                    $user->cv=$cv;
+                if ($request->certificate && $request->certificate->isValid()){
+                    $file_name=time().'.'.$request->file('certificate')->getClientOriginalName();
+                    $path= $request->file('certificate')->storeAs('/',$file_name,'public');
+                    $certificate="/storage/".$path;
+                    $user->certificate=$certificate;
                 }
                 $user->update();
                 return response()->json([
