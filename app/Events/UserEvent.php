@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Models\User;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -13,13 +14,13 @@ use Illuminate\Queue\SerializesModels;
 class UserEvent
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
-    public $user;
+
     /**
      * Create a new event instance.
      */
-    public function __construct($user)
+    public function __construct(public User $user)
     {
-        $this->user=$user;
+
     }
 
     /**

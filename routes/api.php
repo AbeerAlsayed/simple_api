@@ -3,6 +3,7 @@
 use App\Enums\TokenAbility;
 use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\v1\auth\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,8 +17,10 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-Route::post('signup',[UserController::class,'signup']);
-Route::post('login',[UserController::class,'login']);
+
+
+Route::post('signup',[AuthController::class,'signup']);
+Route::post('login',[AuthController::class,'login']);
 
 
 
@@ -31,4 +34,4 @@ Route::group(['middleware'=>'auth:sanctum','ability:' . TokenAbility::ISSUE_ACCE
     Route::get('/refresh-token', [UserController::class, 'refreshToken']);
 });
 
-
+require __DIR__.'/api_v1.php';
