@@ -215,4 +215,6 @@ class UserController extends Controller
         return response(['message' => "Token generate", 'token' => $accessToken->plainTextToken]);
     }
 
+
+
 }

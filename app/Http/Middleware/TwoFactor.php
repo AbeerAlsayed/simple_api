@@ -2,10 +2,12 @@
 
 namespace App\Http\Middleware;
 
+use App\Traits\ApiResponse;
 use Closure;
 
 class TwoFactor
 {
+    use ApiResponse;
     /**
      * Handle an incoming request.
      *
@@ -23,15 +25,11 @@ class TwoFactor
             {
                 $user->resetTwoFactorCode();
                 auth()->logout();
+                return $this->success([],'The two factor code has expired. Please login again.',200);
 
-                return redirect()->route('login')
-                    ->withMessage('The two factor code has expired. Please login again.');
             }
+            return $this->error('The two factor code not right. Please login again.',200);
 
-            if(!$request->is('verify*')) //prevent enless loop, otherwise send to verify
-            {
-                return redirect()->route('verify.index');
-            }
         }
 
         return $next($request);

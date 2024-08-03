@@ -98,5 +98,12 @@ class AuthController extends Controller
       return $this->success($accessToken->plainTextToken,"Token generate",200);
 //        return response(['message' => "Token generate", 'token' => $accessToken->plainTextToken]);
     }
-
+    public function confirmCode(LoginRequest $request){
+        $user=auth()->user();
+        if ($request->input('two_factor_code')==$request->two_factor_code){
+            $user->resetTwoFactorCode();
+            return $this->success([],'Login Successful',200);
+        }
+        return $this->error('the two factor is error',401);
+    }
 }

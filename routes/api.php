@@ -32,6 +32,7 @@ Route::group(['middleware'=>'auth:sanctum','ability:' . TokenAbility::ISSUE_ACCE
     Route::post('logout',[UserController::class,'logout']);
     Route::get('send-email',[EmailController::class,'send']);
     Route::get('/refresh-token', [UserController::class, 'refreshToken']);
+
 });
 
 require __DIR__.'/api_v1.php';
