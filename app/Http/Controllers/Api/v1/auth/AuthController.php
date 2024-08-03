@@ -15,6 +15,7 @@ use App\Notifications\TwoFactorCode;
 use App\Traits\ApiResponse;
 use App\Traits\UploadedFile;
 use App\Traits\UploadedFileStorage;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -52,7 +53,7 @@ class AuthController extends Controller
     public function login(LoginRequest $request){
         try {
             if(!Auth::attempt($request->only(['email', 'password','phone']))){
-                return $this->error("This email is not associated with any user", 401);
+                throw new AuthenticationException('Username or password is invalid.');
             }
 
             $user = User::where('email', $request->email)->first();

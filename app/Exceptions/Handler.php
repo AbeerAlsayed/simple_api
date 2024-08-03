@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use App\Traits\ApiResponse;
+use http\Message;
 use Throwable;
 use PDOException;
 use Illuminate\Support\Arr;
@@ -67,11 +68,6 @@ class Handler extends ExceptionHandler
         if ($exception instanceof AuthorizationException) {
             $message = "This action is unauthorized";
             return $this->error(message: $message,code: 403);
-        }
-
-        if ($exception instanceof ModelNotFoundException) {
-            $message = "the.substr($exception->getModel(), 11). you have asked for is not found.";
-            return $this->error(message:$message, code:404);
         }
 
         if ($exception instanceof NotFoundHttpException) {
