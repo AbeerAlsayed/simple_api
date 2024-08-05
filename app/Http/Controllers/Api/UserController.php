@@ -5,12 +5,14 @@ namespace App\Http\Controllers\Api;
 use App\Enums\TokenAbility;
 use App\Events\newUserNotify;
 use App\Events\UserEvent;
+use App\Events\VerificationCodeEvent;
 use App\Jobs\SendTwoFactorToken;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -28,7 +30,6 @@ class UserController extends Controller
                     'name' => 'required',
                     'email' => 'required|email|unique:users,email',
                     'password' => 'required',
-                    'c_password' => 'required|same:password',
                     'phone'=>'required',
                     'profile_picture' => 'nullable|image',
                     'certificate' => 'file|mimes:pdf,doc,docx'
@@ -57,11 +58,15 @@ class UserController extends Controller
                 $user->email = $request->email;
                 $user->phone = $request->phone;
                 $user->password = Hash::make($request->password);
-                $user->c_password = Hash::make($request->c_password);
                 $user->profile_picture=$profile_picture;
                 $user->certificate=$certificate;
                 $user->save();
+
 //                Event::dispatch(new UserEvent($user));
+
+                // verification Event
+                event(new VerificationCodeEvent($user));
+
                 $accessToken = $user->createToken('access_token', [TokenAbility::ACCESS_API->value], Carbon::now()->addMinutes(config('sanctum.ac_expiration')));
                 $refreshToken = $user->createToken('refresh_token', [TokenAbility::ISSUE_ACCESS_TOKEN->value], Carbon::now()->addMinutes(config('sanctum.rt_expiration')));
 
@@ -213,6 +218,67 @@ class UserController extends Controller
     {
         $accessToken = $request->user()->createToken('access_token', [TokenAbility::ACCESS_API->value], Carbon::now()->addMinutes(config('sanctum.ac_expiration')));
         return response(['message' => "Token generate", 'token' => $accessToken->plainTextToken]);
+    }
+
+    public function generatePath($file_type,$image , $user_name)
+    {
+        if($file_type=='image')
+        {
+            $folderName = 'profile';
+            $folderPath = 'images/' . $folderName . '/users/' . $user_name ;
+
+        }
+        else if($file_type=='pdf')
+        {
+            $folderName = 'pdf';
+            $folderPath = 'Files/' . $folderName . '/users/' . $user_name ;
+            // $path = Storage::disk('public')->putFile($folderPath, $image);
+
+        }
+
+        return $folderPath;
+    }
+    /************************************************************************************/
+    public function resendVerifyCode()
+    {
+        $cachedData = Cache::get(request()->ip()) ?? null;
+        if($cachedData==null)
+        {
+            $cachedData = Cache::get('resend_code_' . request()->ip()) ?? null ;
+        }
+        // if($cachedData==null)
+        // return $this->apiError(message: 'you are verification your email already', code: 404);
+        // {
+        //     return false;
+        // }
+        $retrievedEmail = $cachedData['email'];
+        $user = User::whereEmail($retrievedEmail)->first();
+        $user->resendVerificationCode();
+
+    }
+    /***************************************************************************************/
+    public function confirmVerifyCode($request)
+    {
+        $user = Auth::user();
+        $code = $request->verify_code;
+
+        $cachedData = Cache::get($request->ip()) ;
+
+        if ($cachedData) {
+            $retrievedEmail = $cachedData['email'];
+            $retrievedCode = $cachedData['v_code'];
+            // return $retrievedCode;
+            if ($code !== $retrievedCode) {
+                return false;
+            } else {
+                $user->resetVerificationCode();
+                Cache::forget(request()->ip());
+                Cache::forget('resend_code_' . request()->ip());
+                return true;
+            }
+        }
+
+        return false;
     }
 
 

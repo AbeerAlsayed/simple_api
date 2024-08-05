@@ -4,8 +4,10 @@ namespace App\Providers;
 
 use App\Events\newUserNotify;
 use App\Events\UserEvent;
+use App\Events\VerificationCodeEvent;
 use App\Listeners\sendMail;
 use App\Listeners\sendNotifyMail;
+use App\Listeners\VerificationCodeListener;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -27,6 +29,9 @@ class EventServiceProvider extends ServiceProvider
            UserEvent::class=>[
             sendMail::class,
         ],
+        VerificationCodeEvent::class=>[
+            VerificationCodeListener::class,
+        ]
     ];
 
     /**

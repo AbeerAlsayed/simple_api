@@ -19,10 +19,13 @@ use Illuminate\Support\Facades\Route;
 */
 
 
-Route::post('signup',[AuthController::class,'signup']);
-Route::post('login',[AuthController::class,'login']);
+Route::post('signup',[UserController::class,'signup']);
+Route::post('login',[UserController::class,'login']);
+//Route::post('confirm-code', 'confirmCode')->middleware('TwoFactor');
 
 
+//Route::post('/confirm-code',[UserController::class,'confirmVerifyCode'])->name('confirmVerifyCode');
+//Route::post('/resend-code',[UserController::class,'resendVerifyCode'])->name('resendVerifyCode')->middleware('throttle:3,1');
 
 Route::group(['middleware'=>'auth:sanctum','ability:' . TokenAbility::ISSUE_ACCESS_TOKEN->value],function (){
     // get all info about user

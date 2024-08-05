@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 
@@ -55,6 +56,52 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at',
         'two_factor_expires_at',
     ];
+
+
+    public function generateVerificationCode()
+    {
+        $verificationCode = $this->generateCode();
+        Cache::remember(request()->ip(), 60*3, function () use ($verificationCode) {
+            return [
+                'email'=>$this->email,
+                'v_code'=>$verificationCode,
+            ];
+        });
+        Cache::forever('resend_code_' . request()->ip(), [
+            'email' => $this->email,
+        ]);
+        return $verificationCode;
+    }
+
+    /***********************************************/
+    public function generateCode()
+    {
+        $characters = '0123456789ABCDEYZab0123456789cdefghijk0123456789';
+        $verificationCode = '';
+        for ($i = 0; $i < 6; $i++) {
+            $verificationCode .= $characters[rand(0, strlen($characters) - 1)];
+        }
+        return $verificationCode;
+    }
+
+    /***********************************************/
+
+    public  function resetVerificationCode()
+    {
+        $this->email_verified_at = now();
+        $this->save();
+    }
+
+    /*************************************************/
+    public function resendVerificationCode()
+    {
+        $verificationCode = $this->generateVerificationCode();
+        $minutesRemaining = 3;
+        $this->notify(new VereficationCodeNotification($verificationCode, $minutesRemaining));
+    }
+
+
+
     /**
      * Generate 6 digits MFA code for the User
      */
@@ -74,8 +121,8 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         $this->timestamps = false; //Dont update the 'updated_at' field yet
 
-        $this->two_factor_code = null;
-        $this->two_factor_expires_at = null;
+        $this->two_factor_code = '';
+        $this->two_factor_expires_at = now();
         $this->save();
     }
 }

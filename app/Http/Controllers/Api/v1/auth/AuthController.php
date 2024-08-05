@@ -38,6 +38,8 @@ class AuthController extends Controller
     {
             $user=$this->createUser->storeUser($request);
             UserEvent::dispatch($user);
+
+
             $accessToken = $user->createToken('access_token', [TokenAbility::ACCESS_API->value], Carbon::now()->addMinutes(config('sanctum.ac_expiration')));
             $refreshToken = $user->createToken('refresh_token', [TokenAbility::ISSUE_ACCESS_TOKEN->value], Carbon::now()->addMinutes(config('sanctum.rt_expiration')));
             return $this->success(

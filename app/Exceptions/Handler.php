@@ -81,6 +81,10 @@ class Handler extends ExceptionHandler
         }
 
 
+        if ($exception instanceof ValidationException) {
+            return $this->error($exception->errors(), 422);
+        }
+
         if ($exception instanceof QueryException) {
             $message = "Query failed ,Integrity constraint violation";
             return $this->error($message, code:500);

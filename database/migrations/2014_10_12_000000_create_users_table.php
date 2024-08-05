@@ -22,6 +22,8 @@ return new class extends Migration
             $table->string('certificate')->unique()->nullable();
             $table->string('two_factor_code')->nullable();
             $table->dateTime('two_factor_expires_at')->nullable();
+            $table->string('verify_code')->nullable();
+
             $table->rememberToken();
             $table->timestamps();
         });
