@@ -58,48 +58,6 @@ class User extends Authenticatable implements MustVerifyEmail
     ];
 
 
-    public function generateVerificationCode()
-    {
-        $verificationCode = $this->generateCode();
-        Cache::remember(request()->ip(), 60*3, function () use ($verificationCode) {
-            return [
-                'email'=>$this->email,
-                'v_code'=>$verificationCode,
-            ];
-        });
-        Cache::forever('resend_code_' . request()->ip(), [
-            'email' => $this->email,
-        ]);
-        return $verificationCode;
-    }
-
-    /***********************************************/
-    public function generateCode()
-    {
-        $characters = '0123456789ABCDEYZab0123456789cdefghijk0123456789';
-        $verificationCode = '';
-        for ($i = 0; $i < 6; $i++) {
-            $verificationCode .= $characters[rand(0, strlen($characters) - 1)];
-        }
-        return $verificationCode;
-    }
-
-    /***********************************************/
-
-    public  function resetVerificationCode()
-    {
-        $this->email_verified_at = now();
-        $this->save();
-    }
-
-    /*************************************************/
-    public function resendVerificationCode()
-    {
-        $verificationCode = $this->generateVerificationCode();
-        $minutesRemaining = 3;
-        $this->notify(new VereficationCodeNotification($verificationCode, $minutesRemaining));
-    }
-
 
 
     /**
