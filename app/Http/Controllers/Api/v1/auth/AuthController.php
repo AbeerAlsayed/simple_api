@@ -10,6 +10,7 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\UpdateRequest;
 use App\Http\Services\Auth\CreateUserService;
 use App\Http\Services\Auth\UpdateUserService;
+use App\Mail\emailMailable;
 use App\Models\User;
 use App\Notifications\TwoFactorCode;
 use App\Traits\ApiResponse;
@@ -20,6 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
@@ -42,6 +44,7 @@ class AuthController extends Controller
 
             $accessToken = $user->createToken('access_token', [TokenAbility::ACCESS_API->value], Carbon::now()->addMinutes(config('sanctum.ac_expiration')));
             $refreshToken = $user->createToken('refresh_token', [TokenAbility::ISSUE_ACCESS_TOKEN->value], Carbon::now()->addMinutes(config('sanctum.rt_expiration')));
+
             return $this->success(
                 [
                     'token' => $accessToken->plainTextToken,
@@ -100,9 +103,11 @@ class AuthController extends Controller
       return $this->success($accessToken->plainTextToken,"Token generate",200);
 //        return response(['message' => "Token generate", 'token' => $accessToken->plainTextToken]);
     }
-    public function confirmCode(LoginRequest $request){
+    public function confirmCode(Request $request){
         $user=auth()->user();
-        if ($request->input('two_factor_code')==$request->two_factor_code){
+        $inputCode = $request->input('two_factor_code'); // Get the input code
+
+        if ($inputCode === $user->two_factor_code) {
             $user->resetTwoFactorCode();
             return $this->success([],'Login Successful',200);
         }

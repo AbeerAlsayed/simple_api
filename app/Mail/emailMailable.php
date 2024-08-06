@@ -12,15 +12,15 @@ use Illuminate\Support\Facades\Auth;
 
 class emailMailable extends Mailable
 {
-    public $user;
+    public $details;
     use Queueable, SerializesModels;
 
     /**
      * Create a new message instance.
      */
-    public function __construct()
+    public function __construct($details)
     {
-        $this->user=Auth::user();
+        $this->details=$details;
     }
 
     /**
@@ -36,12 +36,12 @@ class emailMailable extends Mailable
     /**
      * Get the message content definition.
      */
-    public function content(): Content
-    {
-        return new Content(
-            view: 'mail',
-        );
-    }
+//    public function content(): Content
+//    {
+//        return new Content(
+//            view: 'mail',
+//        );
+//    }
 
     /**
      * Get the attachments for the message.

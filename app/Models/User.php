@@ -28,6 +28,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'profile_picture',
         'two_factor_code',
         'two_factor_expires_at',
+        'code_email'
     ];
 
     /**
@@ -37,7 +38,6 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected $hidden = [
         'password',
-        'c_password',
         'remember_token',
     ];
 
@@ -59,6 +59,22 @@ class User extends Authenticatable implements MustVerifyEmail
 
 
 
+
+    public function resetEmailCode()
+    {
+        $this->timestamps = false; //Dont update the 'updated_at' field yet
+        $this->code_email = '';
+        $this->email_verified_at = now();
+        $this->save();
+    }
+    public function generateEmailCode()
+    {
+        $this->timestamps = false; //Dont update the 'updated_at' field yet
+
+        $this->code_email = rand(100000, 999999);
+        $this->email_verified_at = now()->addMinutes(10);
+        $this->save();
+    }
 
     /**
      * Generate 6 digits MFA code for the User

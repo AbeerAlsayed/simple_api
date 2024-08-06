@@ -31,6 +31,6 @@ Route::controller(AuthController::class)->middleware('throttle:60,1')
 //            Route::get('send-email',  'send');
             Route::get('/refresh-token', 'refreshToken');
 
-            Route::middleware('auth')->post('confirm-code', 'confirmCode');
+            Route::post('confirm-code', 'confirmCode');
         });
     });
