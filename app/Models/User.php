@@ -57,9 +57,6 @@ class User extends Authenticatable implements MustVerifyEmail
         'two_factor_expires_at',
     ];
 
-
-
-
     public function resetEmailCode()
     {
         $this->timestamps = false; //Dont update the 'updated_at' field yet

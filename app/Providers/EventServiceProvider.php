@@ -29,9 +29,7 @@ class EventServiceProvider extends ServiceProvider
            UserEvent::class=>[
             sendMail::class,
         ],
-        VerificationCodeEvent::class=>[
-            VerificationCodeListener::class,
-        ]
+
     ];
 
     /**

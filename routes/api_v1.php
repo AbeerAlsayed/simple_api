@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-Route::controller(AuthController::class)->middleware('throttle:60,1')
+Route::controller(AuthController::class)->middleware('auth')
     ->prefix('/v1/auth')
     ->group(function() {
         Route::post('signup',  'signup');
@@ -31,6 +31,9 @@ Route::controller(AuthController::class)->middleware('throttle:60,1')
 //            Route::get('send-email',  'send');
             Route::get('/refresh-token', 'refreshToken');
 
-            Route::post('confirm-code', 'confirmCode');
+            Route::post('confirm-two-factor-code', 'confirmTwoFactorCode');
+            Route::middleware('auth:api')->post('confirm-email-code', 'confirmEmailCode');
+            Route::get('resend-email-code', 'resendEmailVerification');
+            Route::get('resend-email-2Fa', 'resendEmailTwoFactor');
         });
     });
